@@ -10,7 +10,7 @@ def add_styles_to_subtitles(input_file, output_file):
     chinese_line_break = r"{\r}"
     english_line_break = ""
 
-    with open(input_file, 'r', encoding='utf-8') as file:
+    with open(input_file, 'r', encoding='UTF-8-sig') as file:
         lines = file.readlines()
 
     # 处理字幕并按编号分组
