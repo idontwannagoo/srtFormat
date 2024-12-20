@@ -131,13 +131,11 @@ def main():
 
         selected_file = file_priorities[choice - 1][0]
         print(f"你选择了文件：{selected_file}")
-        return selected_file
     except ValueError:
         print("输入无效，请输入数字序号。")
         return
 
     # 获取用户选择的文件
-    selected_file = srt_files[choice - 1]
     input_file = os.path.join(directory, selected_file)
 
     chinese_font = input("请输入中文字体名称（留空则为“寒蝉端黑体 Compact”）：").strip()
