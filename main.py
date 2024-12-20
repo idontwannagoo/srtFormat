@@ -1,5 +1,19 @@
 import os
 
+
+# 判断文件名中是否包含指定的标识符
+def get_file_priority(file_name):
+    file_name = file_name.lower()  # 转小写方便判断
+    # 定义优先级，越靠前优先级越高
+    if 'chseng' in file_name:
+        return 3
+    elif 'chs' in file_name:
+        return 2
+    elif 'ch' in file_name:
+        return 1
+    else:
+        return 0
+
 def add_styles_to_subtitles(input_file, output_file, chinese_font, english_font, chinese_font_size, english_font_size):
     # 定义中文和英文的样式前缀
     chinese_style = r"{{\fn{font}\fs{font_size}\1c&HC8C8C8&}}".format(font=chinese_font, font_size=chinese_font_size)
@@ -85,17 +99,39 @@ def main():
         print(f"在路径 '{directory}' 下没有找到任何 .srt 文件。")
         return
 
+    # 获取每个文件的优先级
+    file_priorities = [(file, get_file_priority(file)) for file in srt_files]
+
+    # 按优先级排序，优先级越高的文件排在前面
+    file_priorities.sort(key=lambda x: x[1], reverse=True)
+
+    # 获取最有可能的文件
+    most_likely_file = file_priorities[0][0] if file_priorities else None
+
     # 列出所有找到的 .srt 文件，并标上序号
     print(f"在路径 '{directory}' 下找到以下 .srt 文件：")
-    for idx, file in enumerate(srt_files, start=1):
-        print(f"{idx}. {file}")
+    for idx, (file, _) in enumerate(file_priorities, start=1):
+        # 如果是最有可能的文件，标上提醒
+        if file == most_likely_file:
+            print(f"[Likely] {idx}. {file}")
+        else:
+            print(f"{idx}. {file}")
 
-    # 获取用户的选择
+    # 获取用户的选择，默认选择最有可能的文件（留空时默认为1）
     try:
-        choice = int(input("\n请输入要处理的文件序号：").strip())
+        choice = input("\n请输入要处理的文件序号，留空则选择默认文件：").strip()
+        if not choice:  # 如果留空，则默认选择最有可能的文件
+            choice = 1
+        else:
+            choice = int(choice)
+
         if choice < 1 or choice > len(srt_files):
             print("无效的选择，请选择一个有效的序号。")
             return
+
+        selected_file = file_priorities[choice - 1][0]
+        print(f"你选择了文件：{selected_file}")
+        return selected_file
     except ValueError:
         print("输入无效，请输入数字序号。")
         return
