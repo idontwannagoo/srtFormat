@@ -1,5 +1,4 @@
-import re
-
+import os
 
 def add_styles_to_subtitles(input_file, output_file):
     # 定义中文和英文的样式前缀
@@ -61,7 +60,57 @@ def add_styles_to_subtitles(input_file, output_file):
         file.writelines('\n'.join(new_lines) + '\n')
 
 
-# 测试调用
-input_file = "input.srt"  # 输入文件路径
-output_file = "output.srt"  # 输出文件路径
-add_styles_to_subtitles(input_file, output_file)
+def list_srt_files(directory):
+    # 获取指定目录下所有的 .srt 文件（不包括子目录）
+    srt_files = []
+    for file_name in os.listdir(directory):
+        if file_name.endswith(".srt") and os.path.isfile(os.path.join(directory, file_name)):
+            srt_files.append(file_name)
+    return srt_files
+
+def main():
+    # 获取用户输入的文件夹路径
+    directory = input("请输入文件夹路径：").strip()
+
+    # 检查路径是否存在
+    if not os.path.isdir(directory):
+        print("输入的路径无效，请检查后再试。")
+        return
+
+    # 获取该路径下所有的 .srt 文件
+    srt_files = list_srt_files(directory)
+
+    # 如果没有找到 .srt 文件，提示并退出
+    if not srt_files:
+        print(f"在路径 '{directory}' 下没有找到任何 .srt 文件。")
+        return
+
+    # 列出所有找到的 .srt 文件，并标上序号
+    print(f"在路径 '{directory}' 下找到以下 .srt 文件：")
+    for idx, file in enumerate(srt_files, start=1):
+        print(f"{idx}. {file}")
+
+    # 获取用户的选择
+    try:
+        choice = int(input("\n请输入要处理的文件序号：").strip())
+        if choice < 1 or choice > len(srt_files):
+            print("无效的选择，请选择一个有效的序号。")
+            return
+    except ValueError:
+        print("输入无效，请输入数字序号。")
+        return
+
+    # 获取用户选择的文件
+    selected_file = srt_files[choice - 1]
+    input_file = os.path.join(directory, selected_file)
+
+    # 设置输出文件路径（在同一目录下）
+    output_file = os.path.join(directory, f"output_{selected_file}")
+
+    # 调用处理函数
+    add_styles_to_subtitles(input_file, output_file)
+    print(f"处理完成，输出文件保存在：{output_file}")
+
+
+if __name__ == "__main__":
+    main()
