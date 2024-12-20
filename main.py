@@ -1,15 +1,15 @@
 import os
 
-def add_styles_to_subtitles(input_file, output_file):
+def add_styles_to_subtitles(input_file, output_file, chinese_font, english_font, chinese_font_size, english_font_size):
     # 定义中文和英文的样式前缀
-    chinese_style = r"{\fn寒蝉端黑体 Compact\fs18\1c&HC8C8C8&}"
-    english_style = r"{\fs12\1c&H0F94CB&\b0}"
+    chinese_style = r"{{\fn{font}\fs{font_size}\1c&HC8C8C8&}}".format(font=chinese_font, font_size=chinese_font_size)
+    english_style = r"{{\fn{font}\fs{font_size}\1c&H0F94CB&\b0}}".format(font=english_font, font_size=english_font_size)
 
     # 定义换行符，中文使用这个，英文行不加换行符
     chinese_line_break = r"{\r}"
     english_line_break = ""
 
-    with open(input_file, 'r', encoding='UTF-8-sig') as file:
+    with open(input_file, 'r', encoding='UTF-8-sig') as file:  # 使用 UTF-8-sig 编码读取文件，以去除 BOM 头，避免干扰，否则会出现乱码
         lines = file.readlines()
 
     # 处理字幕并按编号分组
@@ -104,11 +104,23 @@ def main():
     selected_file = srt_files[choice - 1]
     input_file = os.path.join(directory, selected_file)
 
+    chinese_font = input("请输入中文字体名称（留空则为“寒蝉端黑体 Compact”）：").strip()
+    english_font = input("请输入英文字体名称（留空为与中文相同）：").strip()
+    chinese_font_size = input("请输入中文字体大小（留空则为 18）：").strip()
+    english_font_size = input("请输入英文字体大小（留空则为 12）：").strip()
+    if not chinese_font:
+        chinese_font = "寒蝉端黑体 Compact"
+    if not english_font:
+        english_font = chinese_font
+    if not chinese_font_size:
+        chinese_font_size = "18"
+    if not english_font_size:
+        english_font_size = "12"
     # 设置输出文件路径（在同一目录下）
-    output_file = os.path.join(directory, f"output_{selected_file}")
+    output_file = os.path.join(directory, f"{chinese_font}_{english_font}_{selected_file}" if not chinese_font == english_font else f"{chinese_font}_{selected_file}")
 
     # 调用处理函数
-    add_styles_to_subtitles(input_file, output_file)
+    add_styles_to_subtitles(input_file, output_file, chinese_font, english_font, chinese_font_size, english_font_size)
     print(f"处理完成，输出文件保存在：{output_file}")
 
 
