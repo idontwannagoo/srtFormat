@@ -5,20 +5,6 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 import json
 
 
-# 判断文件名中是否包含指定的标识符
-def get_file_priority(file_name):
-    file_name = file_name.lower()  # 转小写方便判断
-    # 定义优先级，越靠前优先级越高
-    if 'chseng' in file_name:
-        return 3
-    elif 'chs' in file_name:
-        return 2
-    elif 'ch' in file_name:
-        return 1
-    else:
-        return 0
-
-
 # 处理字幕并添加样式
 def add_styles_to_subtitles(input_file, output_file, chinese_font, english_font, chinese_font_size, english_font_size, chinese_font_color, english_font_color, chinese_bold, english_bold, chinese_italic, english_italic, chinese_blur, english_blur, shadow_opacity):
     chinese_style = r"{{\fn{font}\fs{font_size}\1c&H{font_color}&{bold}{italic}{blur}\4a&H{shadow_opacity}&}}".format(
@@ -365,12 +351,13 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
                 try:
                     data = json.load(f)
                 except json.JSONDecodeError:
-                    data = {"templates": []}
+                    data = {}
         else:
-            data = {"templates": []}
+            data = {}
 
         # 删除选中的模板
-        data["templates"] = [template for template in data["templates"] if template["name"] != template_name]
+        if template_name in data:
+            del data[template_name]
 
         # 保存修改后的模板数据
         with open("templates.json", "w", encoding="utf-8") as f:
