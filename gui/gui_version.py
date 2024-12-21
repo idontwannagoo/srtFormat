@@ -134,29 +134,37 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.delete_template_button.pack(side=tk.LEFT, padx=5)
 
         # 字体和大小设置
-        self.chinese_font_label = tk.Label(self, text="中文字体：")
-        self.chinese_font_label.pack(pady=5)
-        self.chinese_font_entry = tk.Entry(self, width=50)
+        chinese_font_frame = tk.Frame(self)
+        chinese_font_frame.pack(pady=5)
+        self.chinese_font_label = tk.Label(chinese_font_frame, text="中文字体：")
+        self.chinese_font_label.pack(side=tk.LEFT)
+        self.chinese_font_entry = tk.Entry(chinese_font_frame, width=50)
         self.chinese_font_entry.insert(0, "寒蝉端黑体 Compact")  # 默认值
-        self.chinese_font_entry.pack(pady=5)
+        self.chinese_font_entry.pack(side=tk.LEFT)
 
-        self.english_font_label = tk.Label(self, text="英文字体：")
-        self.english_font_label.pack(pady=5)
-        self.english_font_entry = tk.Entry(self, width=50)
+        english_font_frame = tk.Frame(self)
+        english_font_frame.pack(pady=5)
+        self.english_font_label = tk.Label(english_font_frame, text="英文字体：")
+        self.english_font_label.pack(side=tk.LEFT)
+        self.english_font_entry = tk.Entry(english_font_frame, width=50)
         self.english_font_entry.insert(0, "寒蝉端黑体 Compact")  # 默认值
-        self.english_font_entry.pack(pady=5)
+        self.english_font_entry.pack(side=tk.LEFT)
 
-        self.chinese_font_size_label = tk.Label(self, text="中文字体大小：")
-        self.chinese_font_size_label.pack(pady=5)
-        self.chinese_font_size_entry = tk.Entry(self, width=50)
+        chinese_font_size_frame = tk.Frame(self)
+        chinese_font_size_frame.pack(pady=5)
+        self.chinese_font_size_label = tk.Label(chinese_font_size_frame, text="中文字体大小：")
+        self.chinese_font_size_label.pack(side=tk.LEFT)
+        self.chinese_font_size_entry = tk.Entry(chinese_font_size_frame, width=50)
         self.chinese_font_size_entry.insert(0, "18")  # 默认值
-        self.chinese_font_size_entry.pack(pady=5)
+        self.chinese_font_size_entry.pack(side=tk.LEFT)
 
-        self.english_font_size_label = tk.Label(self, text="英文字体大小：")
-        self.english_font_size_label.pack(pady=5)
-        self.english_font_size_entry = tk.Entry(self, width=50)
+        english_font_size_frame = tk.Frame(self)
+        english_font_size_frame.pack(pady=5)
+        self.english_font_size_label = tk.Label(english_font_size_frame, text="英文字体大小：")
+        self.english_font_size_label.pack(side=tk.LEFT)
+        self.english_font_size_entry = tk.Entry(english_font_size_frame, width=50)
         self.english_font_size_entry.insert(0, "12")  # 默认值
-        self.english_font_size_entry.pack(pady=5)
+        self.english_font_size_entry.pack(side=tk.LEFT)
 
         # 处理按钮
         self.process_button = tk.Button(self, text="处理字幕", command=self.process_subtitles)
