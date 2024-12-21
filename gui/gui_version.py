@@ -81,7 +81,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         super().__init__()
 
         self.title("字幕处理工具")
-        self.geometry("500x800")
+        self.geometry("500x600")
 
         # 禁止窗口自动调整大小
         self.pack_propagate(False)
@@ -101,8 +101,14 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.srt_file_label = tk.Label(self, text="拖入 SRT 文件：")
         self.srt_file_label.pack(pady=5)
 
-        self.srt_file_entry = tk.Entry(self, width=50)
-        self.srt_file_entry.pack(pady=5)
+        srt_file_frame = tk.Frame(self)
+        srt_file_frame.pack(pady=5)
+
+        self.srt_file_entry = tk.Entry(srt_file_frame, width=50)
+        self.srt_file_entry.pack(side=tk.LEFT, padx=5)
+
+        self.browse_button = tk.Button(srt_file_frame, text="浏览", command=self.browse_file)
+        self.browse_button.pack(side=tk.LEFT, padx=5)
 
         self.srt_file_entry.drop_target_register(DND_FILES)
         self.srt_file_entry.dnd_bind('<<Drop>>', self.on_file_drop)
@@ -115,6 +121,16 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.template_combobox.set("选择模板")  # 设置默认值
         self.template_menu = tk.OptionMenu(self, self.template_combobox, *self.templates)
         self.template_menu.pack(pady=5)
+
+        # 添加模板和删除模板按钮放在同一排
+        button_frame = tk.Frame(self)
+        button_frame.pack(pady=10)
+
+        self.save_template_button = tk.Button(button_frame, text="添加当前数据为模板", command=self.save_template)
+        self.save_template_button.pack(side=tk.LEFT, padx=5)
+
+        self.delete_template_button = tk.Button(button_frame, text="删除当前模板", command=self.delete_template)
+        self.delete_template_button.pack(side=tk.LEFT, padx=5)
 
         # 字体和大小设置
         self.chinese_font_label = tk.Label(self, text="中文字体：")
@@ -141,14 +157,6 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.english_font_size_entry.insert(0, "12")  # 默认值
         self.english_font_size_entry.pack(pady=5)
 
-        # 添加模板按钮
-        self.save_template_button = tk.Button(self, text="添加当前数据为模板", command=self.save_template)
-        self.save_template_button.pack(pady=10)
-
-        # 删除模板按钮
-        self.delete_template_button = tk.Button(self, text="删除当前模板", command=self.delete_template)
-        self.delete_template_button.pack(pady=10)
-
         # 处理按钮
         self.process_button = tk.Button(self, text="处理字幕", command=self.process_subtitles)
         self.process_button.pack(pady=20)
@@ -157,6 +165,11 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.status_label = tk.Label(self, text="请选择 SRT 文件并点击处理", fg="blue", wraplength=580, justify="left")
         self.status_label.pack(pady=10)
 
+    def browse_file(self):
+        file_path = filedialog.askopenfilename(filetypes=[("SRT files", "*.srt")])
+        if file_path:
+            self.srt_file_entry.delete(0, tk.END)
+            self.srt_file_entry.insert(0, file_path)
     def load_templates(self):
         """加载模板配置"""
         self.templates = ["默认模板"]
@@ -168,7 +181,25 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
                         self.templates.append(template["name"])
                 except json.JSONDecodeError:
                     pass
+    def load_templates_refresh(self):
+        """加载模板配置"""
+        self.templates = ["默认模板"]
+        if os.path.exists("template.json"):
+            with open("template.json", "r", encoding="utf-8") as f:
+                try:
+                    data = json.load(f)
+                    for template in data.get("templates", []):
+                        self.templates.append(template["name"])
+                except json.JSONDecodeError:
+                    pass
 
+        # 更新下拉框选项
+        menu = self.template_menu["menu"]
+        menu.delete(0, "end")
+        for template in self.templates:
+            menu.add_command(label=template, command=lambda value=template: self.template_combobox.set(value))
+
+        self.template_combobox.set("选择模板")
     def save_template(self):
         """保存当前设置为模板"""
         current_template = {
@@ -197,7 +228,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             json.dump(data, f, ensure_ascii=False, indent=4)
 
         # 更新模板选择框
-        self.load_templates()
+        self.load_templates_refresh()
         self.template_combobox.set(current_template["name"])
 
     def delete_template(self):
@@ -225,7 +256,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             json.dump(data, f, ensure_ascii=False, indent=4)
 
         # 更新模板列表
-        self.load_templates()
+        self.load_templates_refresh()
         self.template_combobox.set("选择模板")
 
     def on_file_drop(self, event):
