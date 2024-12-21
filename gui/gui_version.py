@@ -182,7 +182,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.english_font_color_label = tk.Label(english_font_color_frame, text="英文字体颜色：")
         self.english_font_color_label.pack(side=tk.LEFT)
         self.english_font_color_entry = tk.Entry(english_font_color_frame, width=50)
-        self.english_font_color_entry.insert(0, "#H0F94CB")  # 默认值
+        self.english_font_color_entry.insert(0, "#0F94CB")  # 默认值
         self.english_font_color_entry.pack(side=tk.LEFT)
 
         # Checkboxes frame
