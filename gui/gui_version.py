@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinterdnd2 import TkinterDnD, DND_FILES
 import json
+import chardet
 
 
 # 处理字幕并添加样式
@@ -30,8 +31,22 @@ def add_styles_to_subtitles(input_file, output_file, chinese_font, english_font,
     english_line_break = ""
 
     try:
-        with open(input_file, 'r', encoding='UTF-8-sig') as file:
-            lines = file.readlines()
+        with open(input_file, 'rb') as f:
+            result = chardet.detect(f.read())
+            encoding = result['encoding']
+
+        encodings_to_try = [encoding, 'utf-8', 'GBK', 'ISO-8859-1', 'UTF-16']
+
+        for encoding in encodings_to_try:
+            try:
+                with open(input_file, 'r', encoding=encoding) as file:
+                    lines = file.readlines()
+                    break
+            except UnicodeDecodeError:
+                continue
+
+
+
 
         subtitle_groups = []
         i = 0
