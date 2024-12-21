@@ -97,7 +97,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         super().__init__()
 
         self.title("字幕处理工具")
-        self.geometry("500x600")
+        self.geometry("500x700")
 
         # 禁止窗口自动调整大小
         self.pack_propagate(False)
@@ -280,45 +280,45 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         if file_path:
             self.srt_file_entry.delete(0, tk.END)
             self.srt_file_entry.insert(0, file_path)
+
     def load_templates(self):
         """加载模板配置"""
-        self.templates = ["默认模板"]
-        if os.path.exists("template.json"):
-            with open("template.json", "r", encoding="utf-8") as f:
+        self.templates = []
+        if os.path.exists("templates.json"):
+            with open("templates.json", "r", encoding="utf-8") as f:
                 try:
-                    data = json.load(f)
-                    for template in data.get("templates", []):
-                        self.templates.append(template["name"])
+                    templates = json.load(f)
+                    self.templates = list(templates.keys())
                 except json.JSONDecodeError:
                     pass
+
     def load_templates_refresh(self):
-        """加载模板配置"""
-        self.templates = ["默认模板"]
-        if os.path.exists("template.json"):
-            with open("template.json", "r", encoding="utf-8") as f:
-                try:
-                    data = json.load(f)
-                    for template in data.get("templates", []):
-                        self.templates.append(template["name"])
-                except json.JSONDecodeError:
-                    pass
+        # 读取现有模板
+        if os.path.exists('templates.json'):
+            with open('templates.json', 'r', encoding='utf-8') as file:
+                templates = json.load(file)
+        else:
+            templates = {}
 
-        # 更新下拉框选项
-        menu = self.template_menu["menu"]
-        menu.delete(0, "end")
-        for template in self.templates:
-            menu.add_command(label=template, command=lambda value=template: self.template_combobox.set(value))
-
-        self.template_combobox.set("选择模板")
+        # 清空并重新填充模板下拉选项
+        menu = self.template_menu['menu']
+        menu.delete(0, 'end')
+        for template_name in templates.keys():
+            menu.add_command(label=template_name, command=lambda value=template_name: self.template_combobox.set(value))
 
     def save_template(self):
+        # 使用指定格式生成模板名称
         template_name = f"{self.chinese_font_entry.get()}_{self.chinese_font_size_entry.get()}_" \
                         f"{self.english_font_entry.get()}_{self.english_font_size_entry.get()}_" \
                         f"{self.shadow_opacity_entry.get()}_" \
-                        f"{'加粗' if self.chinese_bold_var.get() else ''}" \
-                        f"{'斜体' if self.chinese_italic_var.get() else ''}" \
-                        f"{'柔化' if self.chinese_blur_var.get() else ''}"
+                        f"{'中文加粗' if self.chinese_bold_var.get() else ''}" \
+                        f"{'英文加粗' if self.english_bold_var.get() else ''}" \
+                        f"{'中文斜体' if self.chinese_italic_var.get() else ''}" \
+                        f"{'英文斜体' if self.english_italic_var.get() else ''}" \
+                        f"{'中文柔化' if self.chinese_blur_var.get() else ''}" \
+                        f"{'英文柔化' if self.english_blur_var.get() else ''}"
 
+        # 创建一个包含所有模板数据的字典
         template_data = {
             "chinese_font": self.chinese_font_entry.get(),
             "english_font": self.english_font_entry.get(),
@@ -335,10 +335,21 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             "shadow_opacity": self.shadow_opacity_entry.get()
         }
 
-        self.templates.append(template_name)
-        with open('templates.json', 'w', encoding='utf-8') as file:
-            json.dump({template_name: template_data}, file, ensure_ascii=False, indent=4)
+        # 读取现有模板
+        if os.path.exists('templates.json'):
+            with open('templates.json', 'r', encoding='utf-8') as file:
+                existing_templates = json.load(file)
+        else:
+            existing_templates = {}
 
+        # 添加新模板到现有模板
+        existing_templates[template_name] = template_data
+
+        # 将更新后的模板写回文件
+        with open('templates.json', 'w', encoding='utf-8') as file:
+            json.dump(existing_templates, file, ensure_ascii=False, indent=4)
+
+        # 刷新模板列表
         self.load_templates_refresh()
 
     def delete_template(self):
@@ -349,8 +360,8 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             return
 
         # 读取现有模板
-        if os.path.exists("template.json"):
-            with open("template.json", "r", encoding="utf-8") as f:
+        if os.path.exists("templates.json"):
+            with open("templates.json", "r", encoding="utf-8") as f:
                 try:
                     data = json.load(f)
                 except json.JSONDecodeError:
@@ -362,7 +373,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         data["templates"] = [template for template in data["templates"] if template["name"] != template_name]
 
         # 保存修改后的模板数据
-        with open("template.json", "w", encoding="utf-8") as f:
+        with open("templates.json", "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
         # 更新模板列表
