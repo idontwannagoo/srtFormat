@@ -246,40 +246,35 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.status_label.pack(pady=10)
 
     def update_fields_from_template(self, *args):
-        template_name = self.template_combobox.get()
-        if template_name == "选择模板" or template_name == "默认模板":
+        selected_template = self.template_combobox.get()
+        if selected_template == "选择模板":
             return
 
-        if os.path.exists("template.json"):
-            with open("template.json", "r", encoding="utf-8") as f:
-                try:
-                    data = json.load(f)
-                    for template in data.get("templates", []):
-                        if template["name"] == template_name:
-                            self.chinese_font_entry.delete(0, tk.END)
-                            self.chinese_font_entry.insert(0, template["chinese_font"])
-                            self.english_font_entry.delete(0, tk.END)
-                            self.english_font_entry.insert(0, template["english_font"])
-                            self.chinese_font_size_entry.delete(0, tk.END)
-                            self.chinese_font_size_entry.insert(0, template["chinese_font_size"])
-                            self.english_font_size_entry.delete(0, tk.END)
-                            self.english_font_size_entry.insert(0, template["english_font_size"])
-                            self.chinese_font_color_entry.delete(0, tk.END)
-                            self.chinese_font_color_entry.insert(0, template["chinese_font_color"])
-                            self.english_font_color_entry.delete(0, tk.END)
-                            self.english_font_color_entry.insert(0, template["english_font_color"])
-                            self.chinese_bold_var.set(template["chinese_bold"])
-                            self.english_bold_var.set(template["english_bold"])
-                            self.chinese_italic_var.set(template["chinese_italic"])
-                            self.english_italic_var.set(template["english_italic"])
-                            self.chinese_blur_var.set(template["chinese_blur"])
-                            self.english_blur_var.set(template["english_blur"])
-                            self.shadow_opacity_entry.delete(0, tk.END)
-                            self.shadow_opacity_entry.insert(0, template["shadow_opacity"])
-                            break
-                except json.JSONDecodeError:
-                    pass
+        with open('templates.json', 'r', encoding='utf-8') as file:
+            templates = json.load(file)
 
+        if selected_template in templates:
+            template_data = templates[selected_template]
+            self.chinese_font_entry.delete(0, tk.END)
+            self.chinese_font_entry.insert(0, template_data["chinese_font"])
+            self.english_font_entry.delete(0, tk.END)
+            self.english_font_entry.insert(0, template_data["english_font"])
+            self.chinese_font_size_entry.delete(0, tk.END)
+            self.chinese_font_size_entry.insert(0, template_data["chinese_font_size"])
+            self.english_font_size_entry.delete(0, tk.END)
+            self.english_font_size_entry.insert(0, template_data["english_font_size"])
+            self.chinese_font_color_entry.delete(0, tk.END)
+            self.chinese_font_color_entry.insert(0, template_data["chinese_font_color"])
+            self.english_font_color_entry.delete(0, tk.END)
+            self.english_font_color_entry.insert(0, template_data["english_font_color"])
+            self.chinese_bold_var.set(template_data["chinese_bold"])
+            self.english_bold_var.set(template_data["english_bold"])
+            self.chinese_italic_var.set(template_data["chinese_italic"])
+            self.english_italic_var.set(template_data["english_italic"])
+            self.chinese_blur_var.set(template_data["chinese_blur"])
+            self.english_blur_var.set(template_data["english_blur"])
+            self.shadow_opacity_entry.delete(0, tk.END)
+            self.shadow_opacity_entry.insert(0, template_data["shadow_opacity"])
     def browse_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("SRT files", "*.srt")])
         if file_path:
@@ -317,39 +312,34 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.template_combobox.set("选择模板")
 
     def save_template(self):
-        current_template = {
-            "name": self.template_combobox.get(),
-            "chinese_font": self.chinese_font_entry.get().strip(),
-            "english_font": self.english_font_entry.get().strip(),
-            "chinese_font_size": self.chinese_font_size_entry.get().strip(),
-            "english_font_size": self.english_font_size_entry.get().strip(),
-            "chinese_font_color": self.chinese_font_color_entry.get().strip(),
-            "english_font_color": self.english_font_color_entry.get().strip(),
+        template_name = f"{self.chinese_font_entry.get()}_{self.chinese_font_size_entry.get()}_" \
+                        f"{self.english_font_entry.get()}_{self.english_font_size_entry.get()}_" \
+                        f"{self.shadow_opacity_entry.get()}_" \
+                        f"{'加粗' if self.chinese_bold_var.get() else ''}" \
+                        f"{'斜体' if self.chinese_italic_var.get() else ''}" \
+                        f"{'柔化' if self.chinese_blur_var.get() else ''}"
+
+        template_data = {
+            "chinese_font": self.chinese_font_entry.get(),
+            "english_font": self.english_font_entry.get(),
+            "chinese_font_size": self.chinese_font_size_entry.get(),
+            "english_font_size": self.english_font_size_entry.get(),
+            "chinese_font_color": self.chinese_font_color_entry.get(),
+            "english_font_color": self.english_font_color_entry.get(),
             "chinese_bold": self.chinese_bold_var.get(),
             "english_bold": self.english_bold_var.get(),
             "chinese_italic": self.chinese_italic_var.get(),
             "english_italic": self.english_italic_var.get(),
             "chinese_blur": self.chinese_blur_var.get(),
             "english_blur": self.english_blur_var.get(),
-            "shadow_opacity": self.shadow_opacity_entry.get().strip()
+            "shadow_opacity": self.shadow_opacity_entry.get()
         }
 
-        if os.path.exists("template.json"):
-            with open("template.json", "r", encoding="utf-8") as f:
-                try:
-                    data = json.load(f)
-                except json.JSONDecodeError:
-                    data = {"templates": []}
-        else:
-            data = {"templates": []}
-
-        data["templates"].append(current_template)
-
-        with open("template.json", "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        self.templates.append(template_name)
+        with open('templates.json', 'w', encoding='utf-8') as file:
+            json.dump({template_name: template_data}, file, ensure_ascii=False, indent=4)
 
         self.load_templates_refresh()
-        self.template_combobox.set(current_template["name"])
 
     def delete_template(self):
         """删除当前选中的模板"""
