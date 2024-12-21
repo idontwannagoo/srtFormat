@@ -121,6 +121,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.template_combobox.set("选择模板")  # 设置默认值
         self.template_menu = tk.OptionMenu(self, self.template_combobox, *self.templates)
         self.template_menu.pack(pady=5)
+        self.template_combobox.trace("w", self.update_fields_from_template)
 
         # 添加模板和删除模板按钮放在同一排
         button_frame = tk.Frame(self)
@@ -164,6 +165,29 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         # 状态栏
         self.status_label = tk.Label(self, text="请选择 SRT 文件并点击处理", fg="blue", wraplength=580, justify="left")
         self.status_label.pack(pady=10)
+
+    def update_fields_from_template(self, *args):
+        template_name = self.template_combobox.get()
+        if template_name == "选择模板" or template_name == "默认模板":
+            return
+
+        if os.path.exists("template.json"):
+            with open("template.json", "r", encoding="utf-8") as f:
+                try:
+                    data = json.load(f)
+                    for template in data.get("templates", []):
+                        if template["name"] == template_name:
+                            self.chinese_font_entry.delete(0, tk.END)
+                            self.chinese_font_entry.insert(0, template["chinese_font"])
+                            self.english_font_entry.delete(0, tk.END)
+                            self.english_font_entry.insert(0, template["english_font"])
+                            self.chinese_font_size_entry.delete(0, tk.END)
+                            self.chinese_font_size_entry.insert(0, template["chinese_font_size"])
+                            self.english_font_size_entry.delete(0, tk.END)
+                            self.english_font_size_entry.insert(0, template["english_font_size"])
+                            break
+                except json.JSONDecodeError:
+                    pass
 
     def browse_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("SRT files", "*.srt")])
