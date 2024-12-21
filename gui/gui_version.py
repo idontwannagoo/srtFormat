@@ -81,7 +81,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         super().__init__()
 
         self.title("字幕处理工具")
-        self.geometry("500x500")
+        self.geometry("500x800")
 
         # 禁止窗口自动调整大小
         self.pack_propagate(False)
@@ -141,11 +141,13 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.english_font_size_entry.insert(0, "12")  # 默认值
         self.english_font_size_entry.pack(pady=5)
 
-
-
         # 添加模板按钮
         self.save_template_button = tk.Button(self, text="添加当前数据为模板", command=self.save_template)
         self.save_template_button.pack(pady=10)
+
+        # 删除模板按钮
+        self.delete_template_button = tk.Button(self, text="删除当前模板", command=self.delete_template)
+        self.delete_template_button.pack(pady=10)
 
         # 处理按钮
         self.process_button = tk.Button(self, text="处理字幕", command=self.process_subtitles)
@@ -197,6 +199,34 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         # 更新模板选择框
         self.load_templates()
         self.template_combobox.set(current_template["name"])
+
+    def delete_template(self):
+        """删除当前选中的模板"""
+        template_name = self.template_combobox.get()
+        if template_name == "选择模板" or template_name == "默认模板":
+            messagebox.showwarning("警告", "请选择一个有效的模板进行删除。")
+            return
+
+        # 读取现有模板
+        if os.path.exists("template.json"):
+            with open("template.json", "r", encoding="utf-8") as f:
+                try:
+                    data = json.load(f)
+                except json.JSONDecodeError:
+                    data = {"templates": []}
+        else:
+            data = {"templates": []}
+
+        # 删除选中的模板
+        data["templates"] = [template for template in data["templates"] if template["name"] != template_name]
+
+        # 保存修改后的模板数据
+        with open("template.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+        # 更新模板列表
+        self.load_templates()
+        self.template_combobox.set("选择模板")
 
     def on_file_drop(self, event):
         file_path = event.data
