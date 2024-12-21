@@ -199,36 +199,42 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         self.english_font_color_entry.insert(0, "#H0F94CB")  # 默认值
         self.english_font_color_entry.pack(side=tk.LEFT)
 
-        self.chinese_bold_var = tk.BooleanVar()
-        self.chinese_bold_check = tk.Checkbutton(self, text="中文字体加粗", variable=self.chinese_bold_var)
-        self.chinese_bold_check.pack(pady=5)
+        # Checkboxes frame
+        checkboxes_frame = tk.Frame(self)
+        checkboxes_frame.pack(pady=5)
 
-        self.english_bold_var = tk.BooleanVar()
-        self.english_bold_check = tk.Checkbutton(self, text="英文字体加粗", variable=self.english_bold_var)
-        self.english_bold_check.pack(pady=5)
+        self.chinese_bold_var = tk.BooleanVar(value=True)
+        self.chinese_bold_check = tk.Checkbutton(checkboxes_frame, text="中文字体加粗", variable=self.chinese_bold_var)
+        self.chinese_bold_check.grid(row=0, column=0, padx=5, pady=5)
 
-        self.chinese_italic_var = tk.BooleanVar()
-        self.chinese_italic_check = tk.Checkbutton(self, text="中文字体斜体", variable=self.chinese_italic_var)
-        self.chinese_italic_check.pack(pady=5)
+        self.english_bold_var = tk.BooleanVar(value=False)
+        self.english_bold_check = tk.Checkbutton(checkboxes_frame, text="英文字体加粗", variable=self.english_bold_var)
+        self.english_bold_check.grid(row=0, column=1, padx=5, pady=5)
 
-        self.english_italic_var = tk.BooleanVar()
-        self.english_italic_check = tk.Checkbutton(self, text="英文字体斜体", variable=self.english_italic_var)
-        self.english_italic_check.pack(pady=5)
+        self.chinese_italic_var = tk.BooleanVar(value=False)
+        self.chinese_italic_check = tk.Checkbutton(checkboxes_frame, text="中文字体斜体",
+                                                   variable=self.chinese_italic_var)
+        self.chinese_italic_check.grid(row=1, column=0, padx=5, pady=5)
 
-        self.chinese_blur_var = tk.BooleanVar()
-        self.chinese_blur_check = tk.Checkbutton(self, text="中文字体柔化", variable=self.chinese_blur_var)
-        self.chinese_blur_check.pack(pady=5)
+        self.english_italic_var = tk.BooleanVar(value=False)
+        self.english_italic_check = tk.Checkbutton(checkboxes_frame, text="英文字体斜体",
+                                                   variable=self.english_italic_var)
+        self.english_italic_check.grid(row=1, column=1, padx=5, pady=5)
 
-        self.english_blur_var = tk.BooleanVar()
-        self.english_blur_check = tk.Checkbutton(self, text="英文字体柔化", variable=self.english_blur_var)
-        self.english_blur_check.pack(pady=5)
+        self.chinese_blur_var = tk.BooleanVar(value=False)
+        self.chinese_blur_check = tk.Checkbutton(checkboxes_frame, text="中文字体柔化", variable=self.chinese_blur_var)
+        self.chinese_blur_check.grid(row=2, column=0, padx=5, pady=5)
+
+        self.english_blur_var = tk.BooleanVar(value=False)
+        self.english_blur_check = tk.Checkbutton(checkboxes_frame, text="英文字体柔化", variable=self.english_blur_var)
+        self.english_blur_check.grid(row=2, column=1, padx=5, pady=5)
 
         shadow_opacity_frame = tk.Frame(self)
         shadow_opacity_frame.pack(pady=5)
         self.shadow_opacity_label = tk.Label(shadow_opacity_frame, text="阴影透明度：")
         self.shadow_opacity_label.pack(side=tk.LEFT)
         self.shadow_opacity_entry = tk.Entry(shadow_opacity_frame, width=50)
-        self.shadow_opacity_entry.insert(0, "255")  # 默认值
+        self.shadow_opacity_entry.insert(0, "0")  # 默认值
         self.shadow_opacity_entry.pack(side=tk.LEFT)
 
         # 处理按钮
