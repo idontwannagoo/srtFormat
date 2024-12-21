@@ -302,7 +302,9 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
                         f"{'中文斜体' if self.chinese_italic_var.get() else ''}" \
                         f"{'英文斜体' if self.english_italic_var.get() else ''}" \
                         f"{'中文柔化' if self.chinese_blur_var.get() else ''}" \
-                        f"{'英文柔化' if self.english_blur_var.get() else ''}"
+                        f"{'英文柔化' if self.english_blur_var.get() else ''}_" \
+                        f"{self.chinese_font_color_entry.get()}_" \
+                        f"{self.english_font_color_entry.get()}"
 
         # 创建一个包含所有模板数据的字典
         template_data = {
