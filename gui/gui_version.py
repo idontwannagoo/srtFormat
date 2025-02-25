@@ -45,25 +45,15 @@ def add_styles_to_subtitles(input_file, output_file, chinese_font, english_font,
             except UnicodeDecodeError:
                 continue
 
-
-
-
-        subtitle_groups = []
-        i = 0
-        while i < len(lines):
-            subtitle_num = lines[i].strip()
-            if not subtitle_num.isdigit():
-                i += 1
-                continue
-            i += 1
-            timestamp = lines[i].strip()
-            i += 1
-            chinese_line = lines[i].strip() if i < len(lines) else ""
-            i += 1
-            english_line = lines[i].strip() if i < len(lines) else ""
-            i += 1
-
-            subtitle_groups.append([subtitle_num, timestamp, chinese_line, english_line])
+        # 检测字幕格式类型
+        subtitle_format = detect_subtitle_format(lines)
+        
+        if subtitle_format == "standard":
+            # 标准格式：一个时间戳后跟中英文
+            subtitle_groups = process_standard_format(lines)
+        else:
+            # 分离格式：相同时间戳的两个连续字幕块
+            subtitle_groups = process_separated_format(lines)
 
         new_lines = []
         for group in subtitle_groups:
@@ -91,6 +81,129 @@ def add_styles_to_subtitles(input_file, output_file, chinese_font, english_font,
 
     except Exception as e:
         return str(e)
+
+def detect_subtitle_format(lines):
+    """检测字幕格式类型"""
+    i = 0
+    timestamps = []
+    
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.isdigit():  # 字幕序号
+            i += 1
+            if i < len(lines):
+                timestamp = lines[i].strip()
+                if " --> " in timestamp:  # 时间戳
+                    timestamps.append(timestamp)
+        i += 1
+    
+    # 检查是否有重复的时间戳
+    timestamp_count = {}
+    for ts in timestamps:
+        timestamp_count[ts] = timestamp_count.get(ts, 0) + 1
+    
+    # 如果有大量重复时间戳，认为是分离格式
+    duplicate_count = sum(1 for count in timestamp_count.values() if count > 1)
+    if duplicate_count > len(timestamps) * 0.3:  # 如果超过30%的时间戳有重复
+        return "separated"
+    else:
+        return "standard"
+
+def process_standard_format(lines):
+    """处理标准格式：一个时间戳后跟中英文"""
+    subtitle_groups = []
+    i = 0
+    while i < len(lines):
+        subtitle_num = lines[i].strip()
+        if not subtitle_num.isdigit():
+            i += 1
+            continue
+        i += 1
+        timestamp = lines[i].strip()
+        i += 1
+        chinese_line = lines[i].strip() if i < len(lines) else ""
+        i += 1
+        english_line = lines[i].strip() if i < len(lines) else ""
+        i += 1
+
+        subtitle_groups.append([subtitle_num, timestamp, chinese_line, english_line])
+    
+    return subtitle_groups
+
+def process_separated_format(lines):
+    """处理分离格式：相同时间戳的两个连续字幕块"""
+    # 先收集所有字幕块
+    blocks = []
+    current_block = []
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            if current_block:
+                blocks.append(current_block)
+                current_block = []
+        else:
+            current_block.append(line)
+    
+    if current_block:
+        blocks.append(current_block)
+    
+    # 合并相同时间戳的字幕块
+    subtitle_groups = []
+    i = 0
+    while i < len(blocks) - 1:
+        block1 = blocks[i]
+        block2 = blocks[i + 1]
+        
+        # 检查两个块是否有相同的时间戳
+        if len(block1) >= 2 and len(block2) >= 2 and block1[1] == block2[1]:
+            # 假设第一个块是中文，第二个块是英文
+            subtitle_num = block1[0]
+            timestamp = block1[1]
+            chinese_line = block1[2] if len(block1) > 2 else ""
+            english_line = block2[2] if len(block2) > 2 else ""
+            
+            # 检查是否英文在引号中，这通常表示英文
+            if chinese_line and chinese_line.startswith('"') and chinese_line.endswith('"'):
+                chinese_line, english_line = english_line, chinese_line
+            
+            subtitle_groups.append([subtitle_num, timestamp, chinese_line, english_line])
+            i += 2
+        else:
+            # 如果时间戳不同，则按标准格式处理当前块
+            if len(block1) >= 3:
+                subtitle_num = block1[0]
+                timestamp = block1[1]
+                text_line = block1[2]
+                
+                # 尝试分割中英文
+                if "\n" in text_line:
+                    chinese_line, english_line = text_line.split("\n", 1)
+                else:
+                    chinese_line = text_line
+                    english_line = ""
+                
+                subtitle_groups.append([subtitle_num, timestamp, chinese_line, english_line])
+            i += 1
+    
+    # 处理最后一个块（如果有）
+    if i < len(blocks):
+        block = blocks[i]
+        if len(block) >= 3:
+            subtitle_num = block[0]
+            timestamp = block[1]
+            text_line = block[2]
+            
+            # 尝试分割中英文
+            if "\n" in text_line:
+                chinese_line, english_line = text_line.split("\n", 1)
+            else:
+                chinese_line = text_line
+                english_line = ""
+            
+            subtitle_groups.append([subtitle_num, timestamp, chinese_line, english_line])
+    
+    return subtitle_groups
 
 
 class SubtitleProcessorApp(TkinterDnD.Tk):
@@ -251,7 +364,11 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         if selected_template == "选择模板":
             return
 
-        with open('templates.json', 'r', encoding='utf-8') as file:
+        # 获取程序所在目录的路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        templates_path = os.path.join(script_dir, "..", "templates.json")
+        
+        with open(templates_path, 'r', encoding='utf-8') as file:
             templates = json.load(file)
 
         if selected_template in templates:
@@ -276,6 +393,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             self.english_blur_var.set(template_data["english_blur"])
             self.shadow_opacity_entry.delete(0, tk.END)
             self.shadow_opacity_entry.insert(0, template_data["shadow_opacity"])
+
     def browse_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("SRT files", "*.srt")])
         if file_path:
@@ -284,19 +402,28 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
 
     def load_templates(self):
         """加载模板配置"""
-        self.templates = []
-        if os.path.exists("templates.json"):
-            with open("templates.json", "r", encoding="utf-8") as f:
+        self.templates = ["选择模板"]  # 确保至少有一个默认选项
+        # 获取程序所在目录的路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        templates_path = os.path.join(script_dir, "..", "templates.json")
+        
+        if os.path.exists(templates_path):
+            with open(templates_path, "r", encoding="utf-8") as f:
                 try:
                     templates = json.load(f)
-                    self.templates = list(templates.keys())
+                    if templates:  # 确保有模板数据
+                        self.templates.extend(list(templates.keys()))
                 except json.JSONDecodeError:
                     pass
 
     def load_templates_refresh(self):
+        # 获取程序所在目录的路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        templates_path = os.path.join(script_dir, "..", "templates.json")
+        
         # 读取现有模板
-        if os.path.exists('templates.json'):
-            with open('templates.json', 'r', encoding='utf-8') as file:
+        if os.path.exists(templates_path):
+            with open(templates_path, 'r', encoding='utf-8') as file:
                 templates = json.load(file)
         else:
             templates = {}
@@ -304,6 +431,11 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         # 清空并重新填充模板下拉选项
         menu = self.template_menu['menu']
         menu.delete(0, 'end')
+        
+        # 添加默认选项
+        menu.add_command(label="选择模板", command=lambda value="选择模板": self.template_combobox.set(value))
+        
+        # 添加其他模板选项
         for template_name in templates.keys():
             menu.add_command(label=template_name, command=lambda value=template_name: self.template_combobox.set(value))
 
@@ -338,9 +470,13 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             "shadow_opacity": self.shadow_opacity_entry.get()
         }
 
+        # 获取程序所在目录的路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        templates_path = os.path.join(script_dir, "..", "templates.json")
+        
         # 读取现有模板
-        if os.path.exists('templates.json'):
-            with open('templates.json', 'r', encoding='utf-8') as file:
+        if os.path.exists(templates_path):
+            with open(templates_path, 'r', encoding='utf-8') as file:
                 existing_templates = json.load(file)
         else:
             existing_templates = {}
@@ -349,7 +485,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         existing_templates[template_name] = template_data
 
         # 将更新后的模板写回文件
-        with open('templates.json', 'w', encoding='utf-8') as file:
+        with open(templates_path, 'w', encoding='utf-8') as file:
             json.dump(existing_templates, file, ensure_ascii=False, indent=4)
 
         # 刷新模板列表
@@ -362,9 +498,13 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             messagebox.showwarning("警告", "请选择一个有效的模板进行删除。")
             return
 
+        # 获取程序所在目录的路径
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        templates_path = os.path.join(script_dir, "..", "templates.json")
+        
         # 读取现有模板
-        if os.path.exists("templates.json"):
-            with open("templates.json", "r", encoding="utf-8") as f:
+        if os.path.exists(templates_path):
+            with open(templates_path, "r", encoding="utf-8") as f:
                 try:
                     data = json.load(f)
                 except json.JSONDecodeError:
@@ -377,7 +517,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
             del data[template_name]
 
         # 保存修改后的模板数据
-        with open("templates.json", "w", encoding="utf-8") as f:
+        with open(templates_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
         # 更新模板列表
@@ -407,7 +547,7 @@ class SubtitleProcessorApp(TkinterDnD.Tk):
         chinese_font_size = self.chinese_font_size_entry.get().strip() or "18"
         english_font_size = self.english_font_size_entry.get().strip() or "12"
         chinese_font_color = self.chinese_font_color_entry.get().strip() or "#C8C8C8"
-        english_font_color = self.english_font_color_entry.get().strip() or "#H0F94CB"
+        english_font_color = self.english_font_color_entry.get().strip() or "#0F94CB"
         chinese_bold = self.chinese_bold_var.get()
         english_bold = self.english_bold_var.get()
         chinese_italic = self.chinese_italic_var.get()
