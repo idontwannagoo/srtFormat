@@ -1,0 +1,47 @@
+{
+    "寒蝉端黑体 Compact_18_寒蝉端黑体 Compact_12_0_中文加粗_#C8C8C8_#0F94CB": {
+        "chinese_font": "寒蝉端黑体 Compact",
+        "english_font": "寒蝉端黑体 Compact",
+        "chinese_font_size": "18",
+        "english_font_size": "12",
+        "chinese_font_color": "#C8C8C8",
+        "english_font_color": "#0F94CB",
+        "chinese_bold": true,
+        "english_bold": false,
+        "chinese_italic": false,
+        "english_italic": false,
+        "chinese_blur": false,
+        "english_blur": false,
+        "shadow_opacity": "0"
+    },
+    "苹方 粗体_18_寒蝉端黑体 Compact_12_0_中文加粗_#C8C8C8_#0F94CB": {
+        "chinese_font": "苹方 粗体",
+        "english_font": "寒蝉端黑体 Compact",
+        "chinese_font_size": "18",
+        "english_font_size": "12",
+        "chinese_font_color": "#C8C8C8",
+        "english_font_color": "#0F94CB",
+        "chinese_bold": true,
+        "english_bold": false,
+        "chinese_italic": false,
+        "english_italic": false,
+        "chinese_blur": false,
+        "english_blur": false,
+        "shadow_opacity": "0"
+    },
+    "楷体_12_寒蝉端黑体 Compact_10_0_中文加粗_#C8C8C8_#0F94CB": {
+        "chinese_font": "楷体",
+        "english_font": "寒蝉端黑体 Compact",
+        "chinese_font_size": "12",
+        "english_font_size": "10",
+        "chinese_font_color": "#C8C8C8",
+        "english_font_color": "#0F94CB",
+        "chinese_bold": true,
+        "english_bold": false,
+        "chinese_italic": false,
+        "english_italic": false,
+        "chinese_blur": false,
+        "english_blur": false,
+        "shadow_opacity": "0"
+    }
+}
